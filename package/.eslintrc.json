@@ -1,0 +1,10 @@
+{
+    "parserOptions": {
+        "ecmaVersion": 6
+    },
+    "globals": {
+        "module": true,
+        "require": true
+    },
+    "extends": "../.eslintrc.json"
+}

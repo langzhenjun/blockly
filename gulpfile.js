@@ -26,7 +26,10 @@
 var gulp = require('gulp');
 gulp.shell = require('gulp-shell');
 gulp.concat = require('gulp-concat');
-var insert = require('gulp-insert');
+gulp.replace = require('gulp-replace');
+gulp.rename = require('gulp-rename');
+gulp.insert = require('gulp-insert');
+gulp.umd = require('gulp-umd');
 
 var path = require('path');
 var fs = require('fs');
@@ -169,6 +172,173 @@ gulp.task('typings', function (cb) {
       }
     });
 });
+
+var packageDestination = './dist';
+
+function packageBlockly() {
+  return gulp.src('blockly_compressed.js')
+    .pipe(gulp.replace(/goog\.global\s*=\s*this;/, 'goog.global=window'))
+    .pipe(gulp.replace(/Blockly\.utils\.global\s*=\s*this\|\|self;/, 'Blockly.utils.global=window;'))
+    .pipe(gulp.insert.wrap(`
+    /* eslint-disable */
+    module.exports = (function(){`,
+      `Blockly.goog=goog;return Blockly;
+    })()`))
+    .pipe(gulp.dest(packageDestination));
+};
+
+function packageBlocks() {
+  return gulp.src('blocks_compressed.js')
+    .pipe(gulp.insert.wrap(`
+    /* eslint-disable */
+    module.exports = function(Blockly){
+      var goog = Blockly.goog;
+      Blockly.Blocks={};`,
+      `return Blockly.Blocks;
+    }`))
+    .pipe(gulp.dest(packageDestination));
+};
+
+const DOCUMENT = `
+var JSDOM = require('jsdom').JSDOM;
+var window = (new JSDOM()).window;
+var document = window.document;
+var Element = window.Element;
+`;
+
+function packageBlocklyNode() {
+  return gulp.src('blockly_compressed.js')
+    .pipe(gulp.replace(/goog\.global\s*=\s*this\|\|self;/, 'goog.global=global;'))
+    .pipe(gulp.replace(/Blockly\.utils\.global\s*=\s*this\|\|self;/, 'Blockly.utils.global=global;'))
+    .pipe(gulp.insert.wrap(`
+    /* eslint-disable */
+    ${DOCUMENT}
+    module.exports = (function(){`,
+      `Blockly.utils.xml.textToDomDocument = function(text) {
+        var jsdom = new JSDOM(text, { contentType: 'text/xml' });
+        return jsdom.window.document;
+      };
+      Blockly.goog=goog;
+      return Blockly;
+    })()`))
+    .pipe(gulp.rename('blockly_compressed-node.js'))
+    .pipe(gulp.dest(packageDestination));
+};
+
+function packageBlocksNode() {
+  return gulp.src('blocks_compressed.js')
+    .pipe(gulp.insert.wrap(`
+    /* eslint-disable */
+    module.exports = function(Blockly){
+      var goog = Blockly.goog;
+      ${DOCUMENT}
+      Blockly.Blocks={};`,
+      `return Blockly.Blocks;
+    }`))
+    .pipe(gulp.rename('blocks_compressed-node.js'))
+    .pipe(gulp.dest(packageDestination));
+};
+
+function packageLang(file, lang) {
+  return gulp.src(file)
+    .pipe(gulp.insert.wrap(`
+    /* eslint-disable */
+    module.exports = function(Blockly){`,
+      `return Blockly.${lang};
+    }`))
+    .pipe(gulp.dest(packageDestination));
+};
+
+function packageMsg() {
+  return gulp.src('msg/js/*.js')
+    .pipe(gulp.replace(/goog\.[^\n]+/g, ''))
+    .pipe(gulp.insert.wrap(`
+    /* eslint-disable */
+    var Blockly = {};Blockly.Msg={};
+    module.exports = function(){`,
+      `return Blockly.Msg;
+    }`))
+    .pipe(gulp.dest(`${packageDestination}/msg`));
+};
+
+function packageMedia() {
+  return gulp.src('./media/*')
+    .pipe(gulp.dest(`${packageDestination}/media`));
+};
+
+function packageUMD() {
+  var srcs = [
+    'blockly_compressed.js',
+    'blocks_compressed.js',
+    'javascript_compressed.js',
+    'msg/js/en.js'
+  ];
+  return gulp.src(srcs)
+    .pipe(gulp.concat('blockly.min.js'))
+    .pipe(gulp.umd({
+      namespace: function() {
+        return 'Blockly';
+      },
+      exports: function() {
+        return 'Blockly';
+      }
+    }))
+    .pipe(gulp.dest(`${packageDestination}`))
+};
+
+function packageJSON() {
+  return gulp.src('./package.json')
+    .pipe(gulp.dest(`${packageDestination}`))
+}
+
+function packageDTS() {
+  return gulp.src('./typings/blockly.d.ts')
+    .pipe(gulp.dest(`${packageDestination}`))
+}
+
+gulp.task('package-blockly', packageBlockly);
+gulp.task('package-blocks', packageBlocks);
+gulp.task('package-blockly-node', packageBlocklyNode);
+gulp.task('package-blocks-node', packageBlocksNode);
+
+gulp.task('package-javascript', () => packageLang('javascript_compressed.js', 'JavaScript'));
+gulp.task('package-python', () => packageLang('python_compressed.js', 'Python'));
+gulp.task('package-lua', () => packageLang('lua_compressed.js', 'Lua'));
+gulp.task('package-dart', () => packageLang('dart_compressed.js', 'Dart'));
+gulp.task('package-php', () => packageLang('php_compressed.js', 'PHP'));
+
+gulp.task('package-msg', packageMsg);
+gulp.task('package-media', packageMedia);
+
+gulp.task('package-umd', packageUMD);
+
+gulp.task('package-json', packageJSON);
+gulp.task('package-dts', packageDTS);
+
+gulp.task('package', [
+  'package-blockly',
+  'package-blocks',
+  'package-blockly-node',
+  'package-blocks-node',
+  'package-javascript',
+  'package-python',
+  'package-lua',
+  'package-dart',
+  'package-php',
+  'package-msg',
+  'package-media',
+  'package-umd',
+  'package-json',
+  'package-dts'
+], function () {
+  return gulp.src('./package/*')
+    .pipe(gulp.dest(packageDestination));
+});
+
+// The release task prepares Blockly for release
+// It rebuilts the Blockly compressed files and updates the TypeScript
+// typings, and then packages all the release files into the /dist directory
+gulp.task('release', gulp.series(['build', 'typings', 'package']));
 
 // The default task concatenates files for Node.js, using English language
 // blocks and the JavaScript generator.
