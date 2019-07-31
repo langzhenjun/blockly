@@ -56,7 +56,7 @@ gulp.task('build', gulp.shell.task([
 // and JavaScript code generation.  If you need another localization or
 // generator language, just copy and edit the srcs. Only one localization
 // language can be included.
-gulp.task('blockly_javascript_en', function() {
+gulp.task('blockly_node_javascript_en', function() {
   var srcs = [
     'blockly_compressed.js',
     'blocks_compressed.js',
@@ -67,7 +67,7 @@ gulp.task('blockly_javascript_en', function() {
   // Override textToDomDocument, providing Node alternative to DOMParser.
   return gulp.src(srcs)
       .pipe(gulp.concat('blockly_node_javascript_en.js'))
-      .pipe(insert.append(`
+      .pipe(gulp.insert.append(`
 if (typeof DOMParser !== 'function') {
   var JSDOM = require('jsdom').JSDOM;
   var window = (new JSDOM()).window;
@@ -114,14 +114,14 @@ function buildWatchTaskFn(concatTask) {
 
 // Watch Blockly files for changes and trigger automatic rebuilds, including
 // the Node-ready blockly_node_javascript_en.js file.
-gulp.task('watch', buildWatchTaskFn('blockly_javascript_en'));
+gulp.task('watch', buildWatchTaskFn('blockly_node_javascript_en'));
 
 // Generates the TypeScript definition file (d.ts) for Blockly.
 // As well as generating the typings of each of the files under core/ and msg/,
 // the script also pulls in a number of part files from typings/parts.
 // This includes the header (incl License), additional useful interfaces
 // including Blockly Options and Google Closure typings
-gulp.task('typings', function (cb) {
+gulp.task('typings', () => {
   const tmpDir = './typings/tmp';
   const blocklySrcs = [
     "core/",
@@ -173,6 +173,7 @@ gulp.task('typings', function (cb) {
     });
 });
 
+
 var packageDestination = './dist';
 
 function packageBlockly() {
@@ -199,20 +200,18 @@ function packageBlocks() {
     .pipe(gulp.dest(packageDestination));
 };
 
-const DOCUMENT = `
-var JSDOM = require('jsdom').JSDOM;
-var window = (new JSDOM()).window;
-var document = window.document;
-var Element = window.Element;
-`;
-
 function packageBlocklyNode() {
+  // Concatenate the sources, appending the module export at the bottom.
+  // Override textToDomDocument, providing Node alternative to DOMParser.
   return gulp.src('blockly_compressed.js')
     .pipe(gulp.replace(/goog\.global\s*=\s*this\|\|self;/, 'goog.global=global;'))
     .pipe(gulp.replace(/Blockly\.utils\.global\s*=\s*this\|\|self;/, 'Blockly.utils.global=global;'))
     .pipe(gulp.insert.wrap(`
     /* eslint-disable */
-    ${DOCUMENT}
+    var JSDOM = require('jsdom').JSDOM;
+    var window = (new JSDOM()).window;
+    var document = window.document;
+    var Element = window.Element;
     module.exports = (function(){`,
       `Blockly.utils.xml.textToDomDocument = function(text) {
         var jsdom = new JSDOM(text, { contentType: 'text/xml' });
@@ -231,7 +230,6 @@ function packageBlocksNode() {
     /* eslint-disable */
     module.exports = function(Blockly){
       var goog = Blockly.goog;
-      ${DOCUMENT}
       Blockly.Blocks={};`,
       `return Blockly.Blocks;
     }`))
@@ -315,7 +313,7 @@ gulp.task('package-umd', packageUMD);
 gulp.task('package-json', packageJSON);
 gulp.task('package-dts', packageDTS);
 
-gulp.task('package', [
+gulp.task('package', gulp.parallel(
   'package-blockly',
   'package-blocks',
   'package-blockly-node',
@@ -330,7 +328,7 @@ gulp.task('package', [
   'package-umd',
   'package-json',
   'package-dts'
-], function () {
+), () => {
   return gulp.src('./package/*')
     .pipe(gulp.dest(packageDestination));
 });
@@ -342,4 +340,4 @@ gulp.task('release', gulp.series(['build', 'typings', 'package']));
 
 // The default task concatenates files for Node.js, using English language
 // blocks and the JavaScript generator.
-gulp.task('default', gulp.series(['build', 'blockly_javascript_en']));
+gulp.task('default', gulp.series(['build', 'blockly_node_javascript_en']));

@@ -17,7 +17,7 @@
     "name": "Neil Fraser"
   },
   "scripts": {
-    "prepare": "gulp blockly_javascript_en",
+    "prepare": "gulp blockly_node_javascript_en",
     "lint": "eslint .",
     "package": "gulp package",
     "release": "gulp release",
@@ -29,9 +29,9 @@
   "umd": "./blockly.min.js",
   "types": "./blockly.d.ts",
   "browser": {
-      "./index.js": "./browser.js",
-      "./core.js": "./core-browser.js",
-      "./blocks.js": "./blocks-browser.js"
+    "./index.js": "./browser.js",
+    "./core.js": "./core-browser.js",
+    "./blocks.js": "./blocks-browser.js"
   },
   "license": "Apache-2.0",
   "private": true,
