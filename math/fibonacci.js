@@ -1,15 +1,15 @@
-Blockly.Blocks['fibonacci'] = {
+Blockly.Blocks['math_fibonacci'] = {
     init: function () {
         this.appendDummyInput()
             .setAlign(Blockly.ALIGN_CENTRE)
-            .appendField("如果：F(1)=")
+            .appendField("if Fib(1)=")
             .appendField(new Blockly.FieldNumber(0), "n1")
-            .appendField("，F(2)=")
+            .appendField("and Fib(2)=")
             .appendField(new Blockly.FieldNumber(1), "n2");
         this.appendValueInput("x")
             .setCheck("Number")
             .setAlign(Blockly.ALIGN_RIGHT)
-            .appendField("，返回F(");
+            .appendField(", return Fib(");
         this.appendDummyInput()
             .appendField(")");
         this.setInputsInline(true);
@@ -19,7 +19,7 @@ Blockly.Blocks['fibonacci'] = {
         this.setHelpUrl("");
     }
 };
-Blockly.JavaScript['fibonacci'] = function (block) {
+Blockly.JavaScript['math_fibonacci'] = function (block) {
     var number_n1 = block.getFieldValue('n1');
     var number_n2 = block.getFieldValue('n2');
     var number_x = Blockly.JavaScript.valueToCode(block, 'x', Blockly.JavaScript.ORDER_ATOMIC);

@@ -7,7 +7,7 @@
     <script src="../blockly/javascript_compressed.js"></script>
     <script src="../blockly/msg/js/en.js"></script>
     <script src="math/fibonacci.js"></script>
-
+    <script src="math/remainder.js"></script>
     <style>
         html,
         body {
@@ -51,20 +51,10 @@
         <block type="math_arithmetic"></block>
         <block type="text"></block>
         <block type="text_print"></block>
-        <block type="fibonacci"></block>
+        <block type="math_fibonacci"></block>
+        <block type="math_remainder"></block>
     </xml>
-    <table>
-        <tbody>
-            <tr>
-                <td>
-                    <p>…</p>
-                </td>
-            </tr>
-            <tr>
-                <td id="blocklyArea">Blockly will be positioned here.</td>
-            </tr>
-        </tbody>
-    </table>
+    <div id="blocklyArea">Blockly will be positioned here.</div>
     <div id="blocklyDiv" style="position: absolute"></div>
 </body>
 <script>
