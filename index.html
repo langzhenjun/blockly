@@ -1,106 +1,118 @@
 <html>
-    <head>
-        <title>BLOCKLY</title>
-        <script src="../blockly/blockly_compressed.js"></script>
-        <script src="../blockly/blocks_compressed.js"></script>
-        <script src="../blockly/javascript_compressed.js"></script>
-        <script src="../blockly/msg/js/en.js"></script>
-        <script src="math/fibonacci.js"></script>
 
-        <style>
-            html, body {
-                height: 100%;
-                margin: 0;
-            }
-            body {
-                background-color: #fff;
-                font-family: sans-serif;
-                overflow: hidden;
-            }
-            h1 {
-                font-weight: normal;
-                font-size: 140%;
-            }
-            table {
-                height: 100%;
-                width: 100%;
-            }
-            #blocklyArea {
-                height: 99%;
-            }
-        </style>
-        <style type="text/css" href="asserts/css/main.css"></style>
-    </head>
-    <body>
-        <div> 
-            <button onclick="runCode();">RunCode</button>
-            <button onclick="showCode();">ShowCode</button>
-        </div>
-        <xml id="toolbox" style="display: none">
-            <block type="controls_if"></block>
-            <block type="controls_repeat_ext"></block>
-            <block type="logic_compare"></block>
-            <block type="math_number"></block>
-            <block type="math_arithmetic"></block>
-            <block type="text"></block>
-            <block type="text_print"></block>
-            <block type="fibonacci"></block>
-        </xml>
-        <table>
-            <tbody>
-                <tr>
-                    <td> <p>…</p> </td>
-                </tr>
-                <tr>
-                    <td id="blocklyArea">Blockly will be positioned here.</td>
-                </tr>
-            </tbody>
-        </table>
-        <div id="blocklyDiv" style="position: absolute"></div>
-    </body>
-    <script>
-        var blocklyArea = document.getElementById('blocklyArea');
-        var blocklyDiv = document.getElementById('blocklyDiv');
-        var workspace = Blockly.inject(blocklyDiv,
-            {toolbox: document.getElementById('toolbox')});
-        var onresize = function(e) {
-          // Compute the absolute coordinates and dimensions of blocklyArea.
-          var element = blocklyArea;
-          var x = 0;
-          var y = 0;
-          do {
+<head>
+    <title>BLOCKLY</title>
+    <script src="../blockly/blockly_compressed.js"></script>
+    <script src="../blockly/blocks_compressed.js"></script>
+    <script src="../blockly/javascript_compressed.js"></script>
+    <script src="../blockly/msg/js/en.js"></script>
+    <script src="math/fibonacci.js"></script>
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            background-color: #fff;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-weight: normal;
+            font-size: 140%;
+        }
+
+        table {
+            height: 100%;
+            width: 100%;
+        }
+
+        #blocklyArea {
+            height: 99%;
+        }
+    </style>
+    <style type="text/css" href="asserts/css/main.css"></style>
+</head>
+
+<body>
+    <div>
+        <button onclick="runCode();">RunCode</button>
+        <button onclick="showCode();">ShowCode</button>
+    </div>
+    <xml id="toolbox" style="display: none">
+        <block type="controls_if"></block>
+        <block type="controls_repeat_ext"></block>
+        <block type="logic_compare"></block>
+        <block type="math_number"></block>
+        <block type="math_arithmetic"></block>
+        <block type="text"></block>
+        <block type="text_print"></block>
+        <block type="fibonacci"></block>
+    </xml>
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <p>…</p>
+                </td>
+            </tr>
+            <tr>
+                <td id="blocklyArea">Blockly will be positioned here.</td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="blocklyDiv" style="position: absolute"></div>
+</body>
+<script>
+    var blocklyArea = document.getElementById('blocklyArea');
+    var blocklyDiv = document.getElementById('blocklyDiv');
+    var workspace = Blockly.inject(blocklyDiv, {
+        toolbox: document.getElementById('toolbox')
+    });
+    var onresize = function (e) {
+        // Compute the absolute coordinates and dimensions of blocklyArea.
+        var element = blocklyArea;
+        var x = 0;
+        var y = 0;
+        do {
             x += element.offsetLeft;
             y += element.offsetTop;
             element = element.offsetParent;
-          } while (element);
-          // Position blocklyDiv over blocklyArea.
-          blocklyDiv.style.left = x + 'px';
-          blocklyDiv.style.top = y + 'px';
-          blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
-          blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
-          Blockly.svgResize(workspace);
-        };
-        window.addEventListener('resize', onresize, false);
-        onresize();
+        } while (element);
+        // Position blocklyDiv over blocklyArea.
+        blocklyDiv.style.left = x + 'px';
+        blocklyDiv.style.top = y + 'px';
+        blocklyDiv.style.width = blocklyArea.offsetWidth + 'px';
+        blocklyDiv.style.height = blocklyArea.offsetHeight + 'px';
         Blockly.svgResize(workspace);
+    };
+    window.addEventListener('resize', onresize, false);
+    onresize();
+    Blockly.svgResize(workspace);
 
-        function showCode() {
-            window.LoopTrap = 1000;
-            Blockly.JavaScript.INFINITE_LOOP_TRAP = 'if (--window.LoopTrap == 0) throw "Infinity loop."\n';
-            var code = Blockly.JavaScript.workspaceToCode(workspace);
-            Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
-            console.log(code);
+    function showCode() {
+        window.LoopTrap = 1000;
+        Blockly.JavaScript.INFINITE_LOOP_TRAP = 'if (--window.LoopTrap == 0) throw "Infinity loop."\n';
+        var code = Blockly.JavaScript.workspaceToCode(workspace);
+        Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+        console.log(code);
+    }
+
+    function runCode() {
+        window.LoopTrap = 1000;
+        Blockly.JavaScript.INFINITE_LOOP_TRAP = 'if (--window.LoopTrap == 0) throw "Infinity loop."\n';
+        var code = Blockly.JavaScript.workspaceToCode(workspace);
+        Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
+        try {
+            eval(code);
+        } catch (e) {
+            alert(e);
         }
-        function runCode() {
-            window.LoopTrap = 1000;
-            Blockly.JavaScript.INFINITE_LOOP_TRAP = 'if (--window.LoopTrap == 0) throw "Infinity loop."\n';
-            var code = Blockly.JavaScript.workspaceToCode(workspace);
-            Blockly.JavaScript.INFINITE_LOOP_TRAP = null;
-            try {
-                eval(code);
-            } catch(e) {
-                alert(e);
-            }
-        }
-      </script>
+    }
+</script>
+
 </html>
