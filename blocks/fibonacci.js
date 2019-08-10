@@ -28,7 +28,6 @@ Blockly.JavaScript['fibonacci'] = function (block) {
         number_x = 1;
     }
 
-    // TODO: Assemble JavaScript into code variable.
     var code = '\
     (function fib(n) {\
         if (n == 1) return ' + number_n1 + ';\
